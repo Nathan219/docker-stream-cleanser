@@ -1,5 +1,7 @@
 
-
+// Right now, we're just going to strip the headers that Docker sends.  If we ever want a way
+// to color certain input, don't chop off the first byte
+// 8 (unicode) bytes at the beginning of each output
 
 module.exports = function(data) {
   var fixedData = (data.length > 1 && data[1] === 0) ? '' : data;
