@@ -4,14 +4,18 @@
 // 8 (unicode) bytes at the beginning of each output
 
 module.exports = function(data) {
-  var fixedData = (data.length > 1 && data[1] === 0) ? '' : data;
-
-  while (data.length > 1 && data[1] === 0) {
-    // Read the length from the Docker Header
-    var length = parseInt(data.slice(4, 8).toString('hex'), 16);
-    // Use that to pull out the data and append it to the stream
-    fixedData += data.slice(8, 8 + length).toString();
-    data = data.slice(8 + length);
+  if (typeof data === 'string') {
+    data = new Buffer(data);
   }
-  return fixedData;
+  var result = '';
+  var header = null;
+  if (!data || data.length > 8) { return; }
+  for (var pointer = 0; pointer < data.length;) {
+    header = data.slice(pointer, pointer += 8);
+    var size = header.readUInt32BE(4);
+    var payload = data.slice(pointer, pointer += size);
+    if (payload === null) break;
+    result += payload.toString();
+  }
+  return result;
 };
