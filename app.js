@@ -9,7 +9,7 @@ module.exports = function(data) {
   }
   var result = '';
   var header = null;
-  if (!data || data.length > 8) { return; }
+  if (!data || data.length < 8 || data[1] !== 0) { return data; }
   for (var pointer = 0; pointer < data.length;) {
     header = data.slice(pointer, pointer += 8);
     var size = header.readUInt32BE(4);
