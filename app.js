@@ -4,14 +4,17 @@
 // 8 (unicode) bytes at the beginning of each output
 
 module.exports = function(data) {
-  if (typeof data === 'string') {
+  if (!Buffer.isBuffer(data)) {
     data = new Buffer(data);
   }
   var result = '';
-  var header = null;
+  var header = null, pointer = 0;
   if (!data || data.length < 8 || data[1] !== 0) { return data; }
-  for (var pointer = 0; pointer < data.length;) {
+  while(pointer < data.length) {
     header = data.slice(pointer, pointer += 8);
+    if (header[1] - header[2] - header[3] !== 0) {
+      break;
+    }
     var size = header.readUInt32BE(4);
     var payload = data.slice(pointer, pointer += size);
     if (payload === null) break;
@@ -22,12 +25,15 @@ module.exports = function(data) {
 
 module.exports.cleanStreams = function (buildStream, clientStream) {
   buildStream.on('data', function(data) {
-    var header = null;
+    var header = null, pointer = 0;
     if (!data || data.length < 8 || data[1] !== 0) {
       clientStream.write(data.toString());
     } else {
-      for (var pointer = 0; pointer < data.length;) {
+      while(pointer < data.length) {
         header = data.slice(pointer, pointer += 8);
+        if (header[1] - header[2] - header[3] !== 0) {
+          break;
+        }
         var size = header.readUInt32BE(4);
         var payload = data.slice(pointer, pointer += size);
         if (payload === null) break;

@@ -73,9 +73,7 @@ function createStream(data, includeHeader) {
     buffer[7] = 0;
     // Add the data at the
     buffer.write(data, 8);
-    var lengthBytes = ("000" + data.length.toString(16))
-    lengthBytes = lengthBytes.slice(lengthBytes.length - 4, -1);
-    buffer.write(lengthBytes, 4);
+    buffer.writeInt32BE(data.length, 4);
 
   } else {
     buffer.write(data);
