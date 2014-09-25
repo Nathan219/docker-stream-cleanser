@@ -1,6 +1,6 @@
 {
   "name": "docker-stream-cleanser",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "main": "app.js",
   "devDependencies": {
     "lab": "^4.0.2",
