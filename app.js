@@ -13,10 +13,9 @@ module.exports = function(data, encoding, fixCarriageReturns) {
     var size = header.readUInt32BE(4);
     var payload = data.slice(pointer, pointer += size);
     if (payload === null) break;
-    if (fixCarriageReturns) {
-      payload = payload.replace(/\r?\n/g, '\r\n');
-    }
-    result += payload.toString();
+    payload = (fixCarriageReturns) ?
+      payload.toString().replace(/\r?\n/g, '\r\n') : payload.toString();
+    result += payload;
   }
   return result;
 };
@@ -46,10 +45,9 @@ module.exports.cleanStreams = function (buildStream, clientStream, encoding, fix
         var size = header.readUInt32BE(4);
         var payload = data.slice(pointer, pointer += size);
         if (payload === null) break;
-        if (fixCarriageReturns) {
-          payload = payload.replace(/\r?\n/g, '\r\n');
-        }
-        clientStream.write(payload.toString());
+        payload = (fixCarriageReturns) ?
+          payload.toString().replace(/\r?\n/g, '\r\n') : payload.toString();
+        clientStream.write(payload);
       }
     }
   });
