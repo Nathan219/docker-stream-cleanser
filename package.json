@@ -3,6 +3,7 @@
   "version": "0.0.6",
   "main": "app.js",
   "devDependencies": {
-    "lab": "^4.0.2"
+    "lab": "^4.0.2",
+    "silly-string": "^1.0.1"
   }
 }

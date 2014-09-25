@@ -3,9 +3,9 @@
 // to color certain input, don't chop off the first byte
 // 8 (unicode) bytes at the beginning of each output
 
-module.exports = function(data) {
+module.exports = function(data, encoding) {
   if (!Buffer.isBuffer(data)) {
-    data = new Buffer(data);
+    data = new Buffer(data, encoding);
   }
   var result = '';
   var header = null, pointer = 0;
@@ -23,8 +23,11 @@ module.exports = function(data) {
   return result;
 };
 
-module.exports.cleanStreams = function (buildStream, clientStream) {
+module.exports.cleanStreams = function (buildStream, clientStream, encoding) {
   buildStream.on('data', function(data) {
+    if (!Buffer.isBuffer(data)) {
+      data = new Buffer(data, encoding);
+    }
     var header = null, pointer = 0;
     if (!data || data.length < 8 || data[1] !== 0) {
       clientStream.write(data.toString());
