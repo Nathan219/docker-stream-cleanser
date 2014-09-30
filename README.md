@@ -13,6 +13,30 @@ Seeing weird characters at the beginning of each line coming from your Docker co
 
 [More info on Docker's Container Logs](https://docs.docker.com/reference/api/docker_remote_api_v1.14/#get-container-logs)
 
+Usage
+----
+For clearing from stored logs:
+
+```sh
+var streamCleanser = require('docker-stream-cleanser');
+
+function(theData) {
+    var cleansed = streamCleanser(theData, 'hex');
+}
+```
+
+For clearing between streams:
+
+```sh
+var streamCleanser = require('docker-stream-cleanser');
+function(theStream) {
+    var cleansed = streamCleanser.cleanStreams(theStream, process.stdout, 'hex', true);
+}
+
+```
+
+For more info, look at the header comments and the tests
+
 Version
 ----
 
