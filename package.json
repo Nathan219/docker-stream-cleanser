@@ -3,7 +3,33 @@
   "version": "0.0.11",
   "main": "app.js",
   "devDependencies": {
-    "lab": "^4.0.2",
-    "silly-string": "^1.0.1"
-  }
+    "lab": "^4.0.2"
+  },
+  "description": "This module cleans the docker headers from the log stream from a container.  I never found them very useful, so I wrote this to clean them up either in bulk, or in between a piping.  It's not as simple as just removing the first 8 bytes on every message",
+  "scripts": {
+    "test": "node ./node_modules/lab/bin/lab test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Nathan219/docker-stream-cleanser.git"
+  },
+  "keywords": [
+    "docker",
+    "streams",
+    "dockerlog",
+    "container",
+    "stream",
+    "dockerheader",
+    "logs",
+    "terminal",
+    "log",
+    "cleaner",
+    "remove"
+  ],
+  "author": "Dominathan",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Nathan219/docker-stream-cleanser/issues"
+  },
+  "homepage": "https://github.com/Nathan219/docker-stream-cleanser"
 }
