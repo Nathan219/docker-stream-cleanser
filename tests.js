@@ -155,8 +155,8 @@ describe('Testing the streaming cleanser', function() {
       }
     });
     dockerStream.write(dataWithHeader.toString('hex') +
-      dataWithHeader2.slice(0, 4).toString('hex'));
-    dockerStream.write(dataWithHeader2.slice(4).toString('hex'));
+      dataWithHeader2.slice(0, 1).toString('hex'));
+    dockerStream.write(dataWithHeader2.slice(1).toString('hex'));
   });
 
   it('3 separate messages, 2 messages put together, but with the last message broken in the header',

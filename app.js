@@ -46,12 +46,9 @@ module.exports.cleanStreams = function (buildStream, clientStream, encoding, fix
     }
     // If the header got chopped up, then we probably don't have a length.  But we should at least
     // have the first 4 bytes (hopefully).
-    if (data[0] > 0 && data[0] < 4 && (data[1] - data[2] - data[3] === 0)) {
+    if (data.length > 0 && data[0] > 0 && data[0] < 4) {
       // If true, we at least have a legit docker message'
-      if (data.length < 8) {
-        // If we don't even have enough message for the full header, save it to the buffer and leave
-        lastBuffer = data;
-      } else {
+      if (data[1] - data[2] - data[3] === 0) {
         // We can at least read the size now.
         var header = data.slice(0, 8);
         var pointer = 8;
@@ -81,6 +78,9 @@ module.exports.cleanStreams = function (buildStream, clientStream, encoding, fix
             }
           }
         }
+      } else if (data.length < 8 ) {
+        // If we don't even have enough message for the full header, save it to the buffer and leave
+        lastBuffer = data;
       }
     } else {
       clientStream.write((fixCarriageReturns) ?
