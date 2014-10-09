@@ -1,5 +1,7 @@
 [![NPM](https://nodei.co/npm/docker-stream-cleanser.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/docker-stream-cleanser/)
 
+[![Build Status](https://travis-ci.org/Nathan219/docker-stream-cleanser.svg?branch=master)](https://travis-ci.org/Nathan219/docker-stream-cleanser)
+
 Docker Stream Cleanser
 =========
 
