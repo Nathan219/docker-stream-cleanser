@@ -7,7 +7,7 @@
   },
   "description": "This module cleans the docker headers from the log stream from a container.  I never found them very useful, so I wrote this to clean them up either in bulk, or in between a piping.  It's not as simple as just removing the first 8 bytes on every message",
   "scripts": {
-    "test": "node ./node_modules/lab/bin/lab test.js"
+    "test": "NODE_PATH=. node ./node_modules/lab/bin/lab tests.js"
   },
   "repository": {
     "type": "git",
