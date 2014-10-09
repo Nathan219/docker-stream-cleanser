@@ -1,3 +1,5 @@
+[![NPM](https://nodei.co/npm/docker-stream-cleanser.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/docker-stream-cleanser/)
+
 Docker Stream Cleanser
 =========
 
@@ -40,7 +42,7 @@ For more info, look at the header comments and the tests
 Version
 ----
 
-0.0.11
+0.0.16
 
 Installation
 --------------
