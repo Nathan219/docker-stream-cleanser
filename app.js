@@ -49,10 +49,7 @@ module.exports.cleanStreams = function (buildStream, clientStream, encoding, fix
     var size = header.readUInt32BE(4);
     // check if the size greater than the rest of the message.  If it is, slice off the
     // whole message (-8 to grab the header as well), and store it in the buffer
-    if (8 + size > dataBuffer.length) {
-      // If its too short, just return
-      return;
-    } else {
+    if (8 + size <= dataBuffer.length) {
 
       // Basically do a splice here
       var payload = dataBuffer.slice(8, 8 + size);
@@ -63,11 +60,12 @@ module.exports.cleanStreams = function (buildStream, clientStream, encoding, fix
       clientStream.write(payload);
       if (dataBuffer.length > 8) {
         // Since we've moved the data to a buffer outside of the processing, we can use a
-        // timeout to schedule the next iteration
-        setTimeout(parseDataBuffer, 10);
+        // timeout to schedule the next iteration.
+        setImmediate(parseDataBuffer);
       }
     }
   }
+  // Subscribe to the data event here.
   buildStream.on('data', function(data) {
     // First, make sure the data is a buffer
     if (!Buffer.isBuffer(data)) {
