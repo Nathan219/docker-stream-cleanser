@@ -28,6 +28,17 @@ var streamCleanser = require('docker-stream-cleanser');
 function(theData) {
     var cleansed = streamCleanser(theData, 'hex');
 }
+
+OR
+
+var streamCleanser = require('docker-stream-cleanser');
+
+function(theStream) {
+    var cleansed = streamCleanser.async(theStream, 'hex', function(data) {
+      console.log('the data!', data);
+    });
+}
+
 ```
 
 For clearing between streams:
@@ -50,7 +61,7 @@ For more info, look at the header comments and the tests
 Version
 ----
 
-0.0.16
+0.1.0
 
 Installation
 --------------
