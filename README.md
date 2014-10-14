@@ -58,10 +58,6 @@ function(theStream) {
 
 For more info, look at the header comments and the tests
 
-Version
-----
-
-0.1.0
 
 Installation
 --------------
