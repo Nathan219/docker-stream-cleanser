@@ -1,4 +1,7 @@
 'use strict';
+var through = require('through');
+var exists = require('101/exists');
+var last   = require('101/last');
 
 module.exports = function(data, encoding, fixCarriageReturns) {
   if (!Buffer.isBuffer(data)) {
@@ -40,6 +43,78 @@ module.exports.async = function(stream, encoding, cb) {
     cb(Buffer.concat(result));
   });
 };
+
+module.exports.stream = cleanserStream;
+
+function cleanserStream (encoding) {
+  encoding = encoding || 'utf8'; // utf8 is buffer default
+  var buffer = new Buffer('', encoding);
+  var currentType;
+  var bytesLeft;
+  return through(write, end);
+  function write (data) {
+    var self = this;
+    if (exists(data)) {
+      data = Buffer.isBuffer(data) ? data : new Buffer(data, encoding);
+      buffer = Buffer.concat([buffer, data]);
+      checkBuffer();
+    }
+    function checkBuffer () {
+      if (bytesLeft) {
+        sendPayloadData();
+      }
+      else {
+        checkForHeader();
+      }
+    }
+    function checkForHeader () {
+      if (buffer.length > 8) {
+        // starting a new header and payload
+        var header  = bufferSplice(0, 8);
+        currentType = header.readUInt8(0);
+        bytesLeft   = header.readUInt32BE(4);
+        if (bytesLeft === 0) {
+          currentType = null;
+          bytesLeft   = null;
+        }
+        // if there is data leftover it is a payload chunk
+        if (buffer.length) {
+          checkBuffer();
+        }
+      }
+    }
+    function sendPayloadData () {
+      // we have data to send
+      var spliceSize   = Math.min(buffer.length, bytesLeft);
+      var bufferBeforeSplice = buffer;
+      var payloadChunk = bufferSplice(0, spliceSize);
+      bytesLeft -= spliceSize;
+      if (bytesLeft === 0) {
+        currentType = null;
+        bytesLeft   = null;
+      }
+      self.queue(payloadChunk);
+      // if there is data leftover it is a header chunk
+      if (buffer.length) {
+        checkForHeader();
+      }
+    }
+  }
+  function end () {
+    if (buffer.length) {
+      this.emit('error', new Error('End event recieved but buffer still has data'));
+    }
+    this.end();
+  }
+  function bufferSplice (start, end) {
+    var out = buffer.slice(start, end);
+    buffer = Buffer.concat([
+      buffer.slice(0, start),
+      buffer.slice(end, buffer.length)
+    ]);
+    return out;
+  }
+}
 
 function parseDockerStream(stream, writeMethod, encoding, cb) {
   var array = [];
