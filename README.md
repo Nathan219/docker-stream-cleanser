@@ -5,11 +5,9 @@
 Docker Stream Cleanser
 =========
 
-Docker Stream Cleanser is a drop-in module to clean the headers from Docker Logs
+Docker Stream Cleanser is a drop-in module to clean the headers from Docker Logs (container attach or container logs)
 
-  - Cleans the header from finished, stored logs
-  - Cleans as it pipes from one stream to another
-  - Accounts for any irregularities in streaming
+  - Removes headers from a Docker logs streams and keeps payload
   - Handles any encoding (Ones compatible with Node.js Buffer)
 
 
@@ -20,43 +18,42 @@ Seeing weird characters at the beginning of each line coming from your Docker co
 
 Usage
 ----
-For clearing from stored logs:
 
-```sh
-var streamCleanser = require('docker-stream-cleanser');
+Usage with Docker Data Stream
+```js
+var streamCleanser = require('docker-stream-cleanser')();
 
-function(theData) {
-    var cleansed = streamCleanser(theData, 'hex');
-}
-
-OR
-
-var streamCleanser = require('docker-stream-cleanser');
-
-function(theStream) {
-    var cleansed = streamCleanser.async(theStream, 'hex', function(data) {
-      console.log('the data!', data);
-    });
-}
-
+dockerLogStream
+  .pipe(streamCleanser)
+  .pipe(/* stream */);
 ```
 
-For clearing between streams:
+Usage with [Dockerode](https://github.com/apocas/dockerode)
+```js
+var Docker = require('dockerode');
+var container = new Docker().getContainer(containerId);
+var streamCleanser = require('docker-stream-cleanser')();
 
-```sh
-var streamCleanser = require('docker-stream-cleanser');
-function(theStream) {
-    var cleansed = streamCleanser.cleanStreams(theStream, process.stdout, 'hex', true);
-}
-
-
-
-// cleanStreams(inputStream, outputStream, encoding, addCarraigeReturn)
-// addCarraigeReturn is a flag to replace all \n's in the stream with \r\n
+container.logs({ stderr: true, stdout: true }, function (err, stream) {
+  stream
+    .pipe(streamCleanser)
+    .pipe(/* stream */);
+});
 ```
 
+Usage with Docker Data Buffer
+```js
+var streamCleanser = require('docker-stream-cleanser')();
+var concat = require('concat-stream');
 
-For more info, look at the header comments and the tests
+streamCleanser
+  .pipe(concat(function (cleanDockerData) {
+    // use cleanDockerData here..
+  }));
+
+streamCleanser.write(dockerDataBuffer);
+streamCleanser.end();
+```
 
 
 Installation
