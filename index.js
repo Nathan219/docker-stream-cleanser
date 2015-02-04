@@ -37,11 +37,14 @@ function createCleanserStream (encoding) {
         var header  = bufferSplice(0, 8);
         currentType = header.readUInt8(0);
         bytesLeft   = header.readUInt32BE(4);
+        if (currentType > 2) {
+          return self.emit('error', new Error('Recieved unexpected type in header: '+currentType));
+        }
         if (bytesLeft === 0) { // this reset is not necessary, but it is more explicit
           currentType = null;
           bytesLeft   = null;
         }
-        // if there is data leftover it is a payload chunk
+        // if there is data leftover it could be a payload or header (if payload is empty)
         if (buffer.length) {
           checkBuffer();
         }

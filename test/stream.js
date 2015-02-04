@@ -168,6 +168,36 @@ describe('stream', function () {
     });
   });
 
+  describe('error upon recieving unexpected header type (> 2)', function() {
+    beforeEach(function (done) {
+      var frame = createFrame('hello', 3);
+      ctx.chunks = [frame];
+      ctx.expected = frame.payload;
+      ctx.streamCleanser = createStreamCleanser('utf8');
+      done();
+    });
+    it('should error bc it will get end before payload completes', function (done) {
+      var streamCleanser = ctx.streamCleanser;
+      // console.log(ctx.chunks);
+      streamCleanser
+        .pipe(concat(function () {
+          // never makes it..
+        }));
+
+      streamCleanser.on('error', function (err) {
+        expect(err).to.exist();
+        expect(err.message).to.match(/unexpected type/);
+        done();
+      });
+
+      // write log data to stream
+      ctx.chunks.forEach(function (chunk) {
+        streamCleanser.write(chunk);
+      });
+      streamCleanser.end();
+    });
+  });
+
   function assertStreamIsCleaned () {
     it('should clean a stream piped to through it', function (done) {
       var streamCleanser = ctx.streamCleanser;

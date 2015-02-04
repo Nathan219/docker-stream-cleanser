@@ -1,8 +1,8 @@
 'use strict';
 var randomInt = require('./random-int');
 
-module.exports = function createFrame (payloadStr) {
-  var type = randomInt(2);
+module.exports = function createFrame (payloadStr, type) {
+  type = type || randomInt(2);
   var payload = new Buffer(payloadStr);
   var header  = createHeader(type, payload.length);
   var frame   = Buffer.concat([header, payload]);
