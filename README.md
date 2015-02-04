@@ -23,7 +23,7 @@ Usage with Docker Data Stream
 ```js
 dockerLogStream
   .pipe(streamCleanser)
-  .pipe(...);
+  .pipe(/* stream */);
 ```
 
 Usage with [Dockerode](https://github.com/apocas/dockerode)
