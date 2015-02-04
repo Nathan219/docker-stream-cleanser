@@ -21,6 +21,8 @@ Usage
 
 Usage with Docker Data Stream
 ```js
+var streamCleanser = require('docker-stream-cleanser')();
+
 dockerLogStream
   .pipe(streamCleanser)
   .pipe(/* stream */);
