@@ -41,6 +41,20 @@ container.logs({ stderr: true, stdout: true }, function (err, stream) {
 });
 ```
 
+Usage with Docker Data Buffer
+```js
+var streamCleanser = require('docker-stream-cleanser')();
+var concat = require('concat-stream');
+
+streamCleanser
+  .pipe(concat(function (cleanDockerData) {
+    // use cleanDockerData here..
+  }));
+
+streamCleanser.write(dockerDataBuffer);
+streamCleanser.end();
+```
+
 
 Installation
 --------------
