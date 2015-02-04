@@ -2,13 +2,13 @@
 var through = require('through');
 
 /**
- * [exports description]
+ * exports createCleanserStream a duplex stream factory method
  * @type {function}
  */
 module.exports = createCleanserStream;
 
 /**
- * Create cleanser duplex stream -
+ * Create a cleanser duplex stream
  * @param  {string}       encoding stream data encoding
  * @return {DuplexStream} pipe docker stream data through this duplex stream to remove headers
  */
