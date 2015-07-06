@@ -39,8 +39,10 @@ function createCleanserStream (encoding) {
         currentType = header.readUInt8(0);
         bytesLeft   = header.readUInt32BE(4);
         if (currentType > 2) {
-          errored = true;
-          return self.emit('error', new Error('Recieved unexpected type in header: '+currentType));
+          //errored = true;
+          buffer = Buffer.concat([header, buffer]);
+          bytesLeft = buffer.length;
+          self.emit(new Error('received unexpected type in header: ' + currentType));
         }
         if (bytesLeft === 0) { // this reset is not necessary, but it is more explicit
           currentType = null;
@@ -71,7 +73,7 @@ function createCleanserStream (encoding) {
   function end () {
     if (errored) { return; }
     if (buffer.length) {
-      this.emit('error', new Error('End event recieved but buffer still has data'));
+      this.emit('error', new Error('End event received but buffer still has data'));
     }
     else {
       this.emit('end');
