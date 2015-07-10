@@ -10,14 +10,17 @@ module.exports = createCleanserStream;
 /**
  * Create a cleanser duplex stream
  * @param  {string}       encoding stream data encoding
+ * @param  {string}       ignoreErrors true if errors should just be streamed through
+ * @param  {string}       logErrors true if errors should be logged to the console
  * @return {DuplexStream} pipe docker stream data through this duplex stream to remove headers
  */
-function createCleanserStream (encoding) {
+function createCleanserStream (encoding, ignoreErrors, logErrors) {
   encoding = encoding || 'utf8'; // utf8 is buffer default
   var buffer = new Buffer('', encoding);
   var currentType;
   var bytesLeft;
   var errored;
+  var allowErrors = !ignoreErrors;
 
   function write (data) {
     var self = this;
@@ -39,10 +42,15 @@ function createCleanserStream (encoding) {
         currentType = header.readUInt8(0);
         bytesLeft   = header.readUInt32BE(4);
         if (currentType > 2) {
-          //errored = true;
+          errored = allowErrors;
           buffer = Buffer.concat([header, buffer]);
           bytesLeft = buffer.length;
-          self.emit(new Error('received unexpected type in header: ' + currentType));
+          if (logErrors) {
+            console.log('ERROR IN DSC:', buffer.toString());
+          }
+          if (allowErrors) {
+            self.emit('error', new Error('received unexpected type in header: ' + currentType));
+          }
         }
         if (bytesLeft === 0) { // this reset is not necessary, but it is more explicit
           currentType = null;
@@ -72,7 +80,7 @@ function createCleanserStream (encoding) {
   }
   function end () {
     if (errored) { return; }
-    if (buffer.length) {
+    if (buffer.length && allowErrors) {
       this.emit('error', new Error('End event received but buffer still has data'));
     }
     else {
