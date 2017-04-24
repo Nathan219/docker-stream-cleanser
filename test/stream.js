@@ -3,13 +3,15 @@
 var Code = require('code');
 var Lab = require('lab');
 var lab = exports.lab = Lab.script();
+var fs = require('fs')
 
 var describe = lab.describe;
 var it = lab.it;
 var beforeEach = lab.beforeEach;
 var expect = Code.expect;
+var through = require('through');
 
-var createStreamCleanser = require('../index');
+var Transformer = require('../transform');
 var concat = require('concat-stream');
 var createFrame = require('./fixtures/create-frame');
 
@@ -31,34 +33,35 @@ describe('stream', function () {
       for (var i = 0; i < twoFrames.length; i++) {
         chunks.push(twoFrames.slice(0, i));
         chunks.push(twoFrames.slice(i, twoFrames.length));
-        expected = Buffer.concat([expected, frame1.payload, frame2.payload]);
+        expected = Buffer.concat([ expected, frame1.payload, frame2.payload ]);
       }
 
-      ctx.chunks   = chunks;
+      ctx.chunks = chunks;
       ctx.expected = expected;
-      ctx.streamCleanser = createStreamCleanser();
       done();
     });
 
     describe('as buffers', function () {
-      assertStreamIsCleaned();
+      it('should clean a stream piped to through it', function (done) {
+        assertStreamIsCleaned(done);
+      })
     });
 
     describe('as strings (payloads only)', function () {
-      beforeEach(function (done) {
-        ctx.streamCleanser = createStreamCleanser('base64');
+      beforeEach(function (done) {;
         ctx.chunks = ctx.chunks.map(function (chunk) {
           return chunk.toString('base64');
         });
         ctx.expected = ctx.expected.toString();
         done();
       });
-      assertStreamIsCleaned();
+      it('should clean a stream piped to through it', function (done) {
+        assertStreamIsCleaned(done);
+      })
     });
 
     describe('as buffers and strings (mixed)', function () {
       beforeEach(function (done) {
-        ctx.streamCleanser = createStreamCleanser('hex');
         ctx.chunks = ctx.chunks.map(function (chunk, i) {
           return i % 2 ?
             chunk.toString('hex') :
@@ -66,7 +69,9 @@ describe('stream', function () {
         });
         done();
       });
-      assertStreamIsCleaned();
+      it('should clean a stream piped to through it', function (done) {
+        assertStreamIsCleaned(done);
+      })
     });
   });
 
@@ -77,16 +82,17 @@ describe('stream', function () {
       var expected = frame.payload;
 
       for (var i = 0; i < frame.length; i++) {
-        chunks.push(frame.slice(i, i+1));
+        chunks.push(frame.slice(i, i + 1));
       }
 
-      ctx.chunks   = chunks;
+      ctx.chunks = chunks;
       ctx.expected = expected;
-      ctx.streamCleanser = createStreamCleanser('utf8');
       done();
     });
 
-    assertStreamIsCleaned();
+    it('should clean a stream piped to through it', function (done) {
+      assertStreamIsCleaned(done);
+    })
   });
 
   describe('multiframe chunks', function () {
@@ -98,123 +104,81 @@ describe('stream', function () {
       for (var i = 1; i < 3; i++) {
         var chunk = new Buffer(0);
         for (var j = 0; i < j; j++) {
-          chunk    = Buffer.concat([ chunk, frame ]);
+          chunk = Buffer.concat([ chunk, frame ]);
           expected = Buffer.concat([ expected, frame.payload ]);
         }
         chunks.push(chunk);
       }
 
-      ctx.chunks   = chunks;
+      ctx.chunks = chunks;
       ctx.expected = expected;
-      ctx.streamCleanser = createStreamCleanser('utf8');
       done();
     });
 
-    assertStreamIsCleaned();
-  });
-
-  describe('encoding', function() {
-    beforeEach(function (done) {
-      var frame = createFrame('helloworld');
-      ctx.chunks = [frame];
-      ctx.expected = frame.payload;
-      ctx.streamCleanser = createStreamCleanser('utf8');
-      done();
-    });
-
-    assertStreamIsCleaned();
-  });
-
-  describe('empty payload', function() {
-    beforeEach(function (done) {
-      var frame = createFrame('');
-      ctx.chunks = [frame];
-      ctx.expected = frame.payload;
-      ctx.streamCleanser = createStreamCleanser('utf8');
-      done();
-    });
-
-    assertStreamIsCleaned();
-  });
-
-  describe('incomplete payload', function() {
-    beforeEach(function (done) {
-      var frame = createFrame('hello');
-      frame = frame.slice(0, 2); // incomplete header and no more data
-      ctx.chunks = [frame];
-      ctx.expected = frame.payload;
-      ctx.streamCleanser = createStreamCleanser('utf8');
-      done();
-    });
-    it('should error bc it will get end before payload completes', function (done) {
-      var streamCleanser = ctx.streamCleanser;
-      // console.log(ctx.chunks);
-      streamCleanser
-        .pipe(concat(function () {
-          // never makes it..
-        }));
-
-      streamCleanser.on('error', function (err) {
-        expect(err).to.exist();
-        expect(err.message).to.match(/buffer still has data/);
-        done();
-      });
-
-      // write log data to stream
-      ctx.chunks.forEach(function (chunk) {
-        streamCleanser.write(chunk);
-      });
-      streamCleanser.end();
-    });
-  });
-
-  describe('error upon recieving unexpected header type (> 2)', function() {
-    beforeEach(function (done) {
-      var frame = createFrame('hello', 3);
-      ctx.chunks = [frame];
-      ctx.expected = frame.payload;
-      ctx.streamCleanser = createStreamCleanser('utf8');
-      done();
-    });
-    it('should error bc it will get end before payload completes', function (done) {
-      var streamCleanser = ctx.streamCleanser;
-      // console.log(ctx.chunks);
-      streamCleanser
-        .pipe(concat(function () {
-          // never makes it..
-        }));
-
-      streamCleanser.on('error', function (err) {
-        expect(err).to.exist();
-        expect(err.message).to.match(/unexpected type/);
-        done();
-      });
-
-      // write log data to stream
-      ctx.chunks.forEach(function (chunk) {
-        streamCleanser.write(chunk);
-      });
-      streamCleanser.end();
-    });
-  });
-
-  function assertStreamIsCleaned () {
     it('should clean a stream piped to through it', function (done) {
-      var streamCleanser = ctx.streamCleanser;
-      // console.log(ctx.chunks);
-      streamCleanser
-        .pipe(concat(function (data) {
-          expect(data.toString()).to.equal(ctx.expected.toString());
-          done();
-        }));
+      assertStreamIsCleaned(done);
+    })
+  });
 
-      streamCleanser.on('error', done);
+  function assertStreamIsCleaned (done) {
+    var sourcePipe = new through()
 
-      // write log data to stream
-      ctx.chunks.forEach(function (chunk) {
-        streamCleanser.write(chunk);
-      });
-      streamCleanser.end();
+    var transformer = new Transformer()
+    // console.log(ctx.chunks);
+    sourcePipe
+      .pipe(transformer)
+      .pipe(concat(function (data) {
+        var count = 0
+        const INC = 50
+        data = data.toString();
+        var expected = ctx.expected.toString()
+        while (count < data.length) {
+          var nowD = data.substr(count, INC)
+          var nowE = expected.substr(count, INC)
+          console.log('Count at   ', count)
+          console.log('data ', nowD)
+          console.log('expected ', nowE)
+          count += INC
+          expect(nowD).to.equal(nowE);
+
+        }
+        done();
+      }));
+
+    // write log data to stream
+    ctx.chunks.forEach(function (chunk) {
+      sourcePipe.write(chunk);
     });
+    sourcePipe.end();
   }
-});
+
+  describe('using a file', function () {
+    describe('empty payload', function () {
+      beforeEach(function (done) {
+        var frame = createFrame('');
+        ctx.chunks = [ frame ];
+        done();
+      });
+
+      it('should clean a stream piped to through it', function (done) {
+        assertStreamIsCleaned(done);
+      })
+    });
+
+    function assertStreamIsCleaned (done) {
+      var concatStream = concat(function (data) {
+        console.log(data.toString())
+        //expect(data.toString()).to.equal(ctx.expected.toString());
+        done();
+      })
+      var transformer = new Transformer()
+      var startPipe = fs.createReadStream('/Users/nathan/runnable/docker-stream-cleanser/test/fixtures/log3')
+
+      // console.log(ctx.chunks);
+      startPipe
+        .pipe(transformer)
+        .pipe(concatStream)
+
+    }
+  })
+})
