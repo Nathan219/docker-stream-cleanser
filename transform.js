@@ -25,9 +25,7 @@ class Cleanser extends stream.Transform {
       },
       whilstCb => {
         const content = chunk.slice(HEADER_LENGTH, endOfData)
-        if (content.length) {
-          this.push(content, enc);
-        }
+        this.push(content, enc)
         // move chunk along itself
         chunk = chunk.slice(endOfData)
 
