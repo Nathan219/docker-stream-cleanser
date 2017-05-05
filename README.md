@@ -21,8 +21,8 @@ Usage
 
 Usage with Docker Data Stream
 ```js
-var streamCleanser = require('docker-stream-cleanser')();
-
+const StreamCleanser = require('docker-stream-cleanser');
+const streamCleanser = new StreamCleanser()
 dockerLogStream
   .pipe(streamCleanser)
   .pipe(/* stream */);
@@ -30,29 +30,17 @@ dockerLogStream
 
 Usage with [Dockerode](https://github.com/apocas/dockerode)
 ```js
-var Docker = require('dockerode');
-var container = new Docker().getContainer(containerId);
-var streamCleanser = require('docker-stream-cleanser')();
+const Docker = require('dockerode');
+const container = new Docker().getContainer(containerId);
+
+const StreamCleanser = require('docker-stream-cleanser');
+const streamCleanser = new StreamCleanser()
 
 container.logs({ stderr: true, stdout: true }, function (err, stream) {
   stream
     .pipe(streamCleanser)
     .pipe(/* stream */);
 });
-```
-
-Usage with Docker Data Buffer
-```js
-var streamCleanser = require('docker-stream-cleanser')();
-var concat = require('concat-stream');
-
-streamCleanser
-  .pipe(concat(function (cleanDockerData) {
-    // use cleanDockerData here..
-  }));
-
-streamCleanser.write(dockerDataBuffer);
-streamCleanser.end();
 ```
 
 
