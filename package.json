@@ -42,7 +42,6 @@
   "homepage": "https://github.com/Nathan219/docker-stream-cleanser",
   "dependencies": {
     "async": "^2.3.0",
-    "lab": "^13.0.2",
     "through": "^2.3.6"
   },
   "devDependencies": {
