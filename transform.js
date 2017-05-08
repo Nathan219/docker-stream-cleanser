@@ -32,7 +32,7 @@ class Cleanser extends stream.Transform {
         setTimeout(whilstCb, 0)
       }, () => {
         if (chunk.length) {
-          this.buffer = Buffer.from(chunk)
+          this.buffer = new Buffer(chunk, enc)
         }
         cb()
       })
